@@ -1,0 +1,9 @@
+from .auth import router as auth_router
+from .farms import router as farms_router
+from .notifications import router as notifications_router
+from .animals import router as animals_router
+from .transactions import router as transactions_router
+from .waste import router as waste_router
+from .water import router as water_router
+from .ai import router as ai_router
+from .weather import router as weather_router

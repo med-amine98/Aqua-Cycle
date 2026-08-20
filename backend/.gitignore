@@ -1,0 +1,11 @@
+# ML model binaries — not committed to git (auto-generated on first run)
+ml_models/*.pth
+ml_models/*.joblib
+ml_models/*.pt
+ml_models/*.pkl
+__pycache__/
+*.pyc
+.env
+venv/
+node_modules/
+*.db
