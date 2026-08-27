@@ -1197,7 +1197,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <MapIcon sx={{ color: '#0A8F5C' }} />
-                🗺️ Localisation & NVIDIA Earth-2
+                 Localisation & NVIDIA Earth-2
                 <Chip 
                   label={loadingNvidia ? 'Chargement...' : 'Live'} 
                   size="small" 
@@ -1352,7 +1352,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <WaterDrop sx={{ color: '#0A8F5C' }} />
-                💧 Prédiction consommation d'eau (IA)
+                 Prédiction consommation d'eau 
                 <Chip label="IA" size="small" color="primary" sx={{ ml: 1 }} />
                 {loadingPredictions && <CircularProgress size={20} sx={{ ml: 1 }} />}
               </Typography>
@@ -1426,7 +1426,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Cloud sx={{ color: '#1A6EB5' }} />
-                🌤️ Prévisions météo 5 jours
+                 Prévisions météo 5 jours
                 {loadingWeather && <CircularProgress size={20} sx={{ ml: 1 }} />}
               </Typography>
               {loadingWeather ? (
@@ -1472,7 +1472,7 @@ const Dashboard: React.FC = () => {
             <CardContent>
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Speed sx={{ color: '#ED6C02' }} />
-                🌍 Analyse atmosphérique
+                 Analyse atmosphérique
               </Typography>
               {atmosphereData && atmosphereData.atmospheric_indicators ? (
                 <Grid container spacing={1}>
@@ -1652,7 +1652,7 @@ const Dashboard: React.FC = () => {
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <SmartToy sx={{ color: '#ED6C02' }} />
-          🤖 Recommandations IA Actionnables
+           Recommandations IA Actionnables
           {loadingRecommendations && <CircularProgress size={20} sx={{ ml: 1 }} />}
           {!loadingRecommendations && aiRecommendations.length > 0 && (
             <Chip 

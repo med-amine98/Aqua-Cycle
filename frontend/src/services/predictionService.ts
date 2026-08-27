@@ -439,7 +439,7 @@ class PredictionService {
         } else {
           recommendations.push({
             id: `rec-start-${Date.now()}`,
-            title: '🚀 Démarrez votre exploitation',
+            title: 'Démarrez votre exploitation',
             description: 'Aucune culture n\'est encore enregistrée. Commencez à planifier votre saison.',
             action: 'Ajouter des cultures pour recevoir des recommandations personnalisées',
             priority: 'basse',
