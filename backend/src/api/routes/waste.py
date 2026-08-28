@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from datetime import date
+from datetime import date, datetime
 from ...services.waste_service import WasteManagementService
 from ...models.waste import WasteDeclaration, WasteType, WasteStatus
 from ...models.market import CompanyProfile, WasteMatch, Transaction, TransactionStatus
@@ -164,7 +164,7 @@ async def aggregate_waste(
     
     for waste in wastes:
         waste.is_aggregated = True
-        waste.aggregation_group_id = str(date.today().timestamp())
+        waste.aggregation_group_id = str(datetime.now().timestamp())
     
     db.commit()
     

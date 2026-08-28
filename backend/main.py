@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.database import engine, Base
-from src.api.routes import auth, farms, notifications, animals, transactions, waste, water, health_analysis, profile, ai_models, iot_sustainability, integration
+from src.models.storage_facility import StorageFacility
+from src.api.routes import auth, farms, notifications, animals, transactions, waste, water, health_analysis, profile, ai_models, iot_sustainability, integration, storage, collection, market, offers
 from src.services.gemini_service import init_gemini
 from src.config import settings
 
@@ -36,6 +37,10 @@ app.include_router(notifications.router)     # /notifications
 app.include_router(animals.router)           # /animals
 app.include_router(transactions.router)      # /transactions
 app.include_router(waste.router)             # /waste
+app.include_router(storage.router)  # /storage - Supply Chain Storage
+app.include_router(collection.router)  # /logistics
+app.include_router(market.router) # /market - Supply Chain - Marketplace
+app.include_router(offers.router)  # /offers - Supply Chain - Offers
 app.include_router(water.router)             # /water
 app.include_router(health_analysis.router)   # /health
 app.include_router(profile.router)           # /auth/profile

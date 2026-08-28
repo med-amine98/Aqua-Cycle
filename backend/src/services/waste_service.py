@@ -42,65 +42,92 @@ class WasteManagementService:
         """Calcule la distance entre deux points géographiques en km"""
         return geodesic((lat1, lon1), (lat2, lon2)).kilometers
     
-    def match_waste_with_companies(self, waste: WasteDeclaration, 
-                                   companies: List[CompanyProfile]) -> List[Dict]:
-        """Trouve les entreprises correspondant le mieux au déchet"""
+    def match_waste_with_companies(self,waste: WasteDeclaration,
+                                   companies: List[CompanyProfile]
+)       -> List[Dict]:
+        """Find companies that match the waste."""
+
         matches = []
-        
+
         for company in companies:
-            # Vérifier l'intérêt pour ce type de déchet
-            if waste.waste_type.value not in company.waste_interests:
+
+            # 1. Check waste type
+            accepted_types = [
+                item.strip().lower()
+                for item in company.waste_interests.split(",")
+            ]
+
+            if waste.waste_type.value.lower() not in accepted_types:
                 continue
-            
-            # Calculer la distance
-            distance = self.calculate_distance(
-                waste.latitude, waste.longitude,
-                company.user.location_lat if hasattr(company.user, 'location_lat') else 0,
-                company.user.location_lon if hasattr(company.user, 'location_lon') else 0
-            )
-            
-            if distance > company.max_distance:
+
+            # 2. Check minimum quantity
+            if waste.quantity < company.min_quantity:
                 continue
-            
-            # Score de compatibilité
-            score = 0
-            
-            # 1. Type de déchet
-            score += 30
-            
-            # 2. Quantité
-            if company.min_quantity <= waste.quantity:
+
+            # 3. Get company location
+            company_lat = getattr(company.user, "location_lat", None)
+            company_lon = getattr(company.user, "location_lon", None)
+
+            # If company location is unavailable, don't reject the match
+            if company_lat is not None and company_lon is not None:
+                distance = self.calculate_distance(
+                    waste.latitude,
+                    waste.longitude,
+                    company_lat,
+                    company_lon
+                )
+
+                if distance > company.max_distance:
+                    continue
+            else:
+                distance = 0
+
+            # 4. Calculate score
+            score = 30  # waste type
+
+            # Quantity
+            if waste.quantity >= company.min_quantity:
                 score += 20
-            
-            # 3. Proximité
+
+            # Distance
             if distance < 20:
                 score += 25
             elif distance < 50:
                 score += 15
             elif distance < 100:
                 score += 5
-            
-            # 4. Qualité
+
+            # Quality
             if waste.quality_grade == "high":
                 score += 15
             elif waste.quality_grade == "medium":
                 score += 10
-            
-            # 5. Valeur économique
-            waste_value = self.WASTE_VALUES.get(waste.waste_type, {}).get("max", 50)
+
+            # Economic value
+            waste_value = self.WASTE_VALUES.get(
+                waste.waste_type,
+                {}
+            ).get("max", 50)
+
             if waste.price_per_unit and waste.price_per_unit <= waste_value:
                 score += 10
-            
+
             matches.append({
                 "company_id": company.id,
                 "company_name": company.company_name,
                 "match_score": score,
                 "distance": round(distance, 1),
-                "estimated_value": round(waste.quantity * (waste.price_per_unit or 50), 2)
+                "estimated_value": round(
+                    waste.quantity * (waste.price_per_unit or 50),
+                    2
+                )
             })
-        
-        # Trier par score décroissant
-        matches.sort(key=lambda x: x["match_score"], reverse=True)
+
+        matches.sort(
+            key=lambda x: x["match_score"],
+            reverse=True
+        )
+
         return matches
     
     def aggregate_waste(self, waste_declarations: List[WasteDeclaration]) -> Dict:
