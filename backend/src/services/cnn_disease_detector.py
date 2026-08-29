@@ -121,6 +121,8 @@ class CNNDiseaseDetector:
             return False
 
     def _predict_with_torch(self, img: Image.Image) -> Dict[str, Any]:
+        if self._transform is None or self._model is None:
+            return self._predict_heuristic(img)
         import torch
         tensor = self._transform(img.convert("RGB")).unsqueeze(0).to(self._device)
         with torch.no_grad():
@@ -173,7 +175,7 @@ class CNNDiseaseDetector:
     def _heuristic_predict(self, img: Image.Image) -> Dict[str, Any]:
         """Deterministic color-based heuristic when torch is not available."""
         img_rgb = img.convert("RGB").resize((64, 64))
-        pixels = list(img_rgb.getdata())
+        pixels = list(img_rgb.getdata())  # type: ignore[arg-type]
         avg_r = sum(p[0] for p in pixels) / len(pixels)
         avg_g = sum(p[1] for p in pixels) / len(pixels)
         avg_b = sum(p[2] for p in pixels) / len(pixels)

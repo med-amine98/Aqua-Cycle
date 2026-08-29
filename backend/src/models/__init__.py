@@ -5,6 +5,9 @@ from .plot import Plot, CropType, CropGrowthStage
 from .water import WaterBudget, WaterRecommendation
 from .waste import WasteDeclaration, WasteType, WasteStatus
 from .market import CompanyProfile, WasteMatch, Transaction, TransactionStatus
+from .storage_facility import StorageFacility
+from .collection import CollectionOrder
+from .offer import WasteOffer
 from .animal import Animal, AnimalType, AnimalSex, HealthStatus
 from .notification import Notification
 from .finance import FinanceTransaction, TransactionType, TransactionCategory

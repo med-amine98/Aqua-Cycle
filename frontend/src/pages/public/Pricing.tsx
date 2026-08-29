@@ -192,7 +192,7 @@ const Pricing: React.FC = () => {
                 }
                 label=""
               />
-              <Typography variant="body2" color={isAnnual ? '#0A8F5C' : 'textSecondary'}>
+              <Typography component="div" variant="body2" color={isAnnual ? '#0A8F5C' : 'textSecondary'}>
                 Annuel
                 <Chip
                   label="Économisez 20%"

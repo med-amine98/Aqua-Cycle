@@ -15,7 +15,7 @@ async def analyze_plant(
     db: Session = Depends(get_db)
 ):
     """Analyse la santé d'une plante via une image"""
-    if not image.content_type.startswith('image/'):
+    if not (image.content_type and image.content_type.startswith('image/')):
         raise HTTPException(status_code=400, detail="Le fichier doit être une image")
     
     try:
@@ -32,7 +32,7 @@ async def analyze_animal(
     db: Session = Depends(get_db)
 ):
     """Analyse la santé d'un animal via une image"""
-    if not image.content_type.startswith('image/'):
+    if not (image.content_type and image.content_type.startswith('image/')):
         raise HTTPException(status_code=400, detail="Le fichier doit être une image")
     
     try:

@@ -13,36 +13,42 @@ router = APIRouter(
 )
 
 
+from pydantic import BaseModel
+
+class StorageFacilityCreate(BaseModel):
+    name: str
+    location: str
+    latitude: float
+    longitude: float
+    total_capacity: float
+    available_capacity: float
+    accepted_waste_types: str
+    storage_cost_per_unit: float = 0.0
+    description: str = ""
+
+
 @router.post("/facilities")
 async def create_storage_facility(
-    name: str,
-    location: str,
-    latitude: float,
-    longitude: float,
-    total_capacity: float,
-    available_capacity: float,
-    accepted_waste_types: str,
-    storage_cost_per_unit: float = 0.0,
-    description: str = "",
+    facility_data: StorageFacilityCreate,
     db: Session = Depends(get_db)
 ):
 
-    if available_capacity > total_capacity:
+    if facility_data.available_capacity > facility_data.total_capacity:
         raise HTTPException(
             status_code=400,
             detail="Available capacity cannot exceed total capacity"
         )
 
     facility = StorageFacility(
-        name=name,
-        location=location,
-        latitude=latitude,
-        longitude=longitude,
-        total_capacity=total_capacity,
-        available_capacity=available_capacity,
-        accepted_waste_types=accepted_waste_types,
-        storage_cost_per_unit=storage_cost_per_unit,
-        description=description,
+        name=facility_data.name,
+        location=facility_data.location,
+        latitude=facility_data.latitude,
+        longitude=facility_data.longitude,
+        total_capacity=facility_data.total_capacity,
+        available_capacity=facility_data.available_capacity,
+        accepted_waste_types=facility_data.accepted_waste_types,
+        storage_cost_per_unit=facility_data.storage_cost_per_unit,
+        description=facility_data.description,
         is_active=True
     )
 
@@ -61,10 +67,53 @@ async def create_storage_facility(
 async def get_storage_facilities(
     db: Session = Depends(get_db)
 ):
-
     facilities = db.query(StorageFacility).filter(
         StorageFacility.is_active == True
     ).all()
+
+    if not facilities:
+        seed_facilities = [
+            StorageFacility(
+                name="Hub Régional Sfax Nord - Silos Biomasse",
+                location="Sfax, Tunisie",
+                latitude=34.7406,
+                longitude=10.7603,
+                total_capacity=1200.0,
+                available_capacity=850.0,
+                accepted_waste_types="olive_pomace,olive_pits,crop_residues",
+                storage_cost_per_unit=12.5,
+                description="Installation moderne équipée de silos ventilés pour grignons et résidus oléicoles.",
+                is_active=True
+            ),
+            StorageFacility(
+                name="Centre Logistique Béja & Nord-Ouest",
+                location="Béja, Tunisie",
+                latitude=36.7256,
+                longitude=9.1817,
+                total_capacity=800.0,
+                available_capacity=620.0,
+                accepted_waste_types="crop_residues,pruning_residues,olive_pomace",
+                storage_cost_per_unit=10.0,
+                description="Entrepôt couvert et plateforme de compactage pour résidus de grandes cultures.",
+                is_active=True
+            ),
+            StorageFacility(
+                name="Hub Zaghouan & Cap-Bon ValoBio",
+                location="Zaghouan, Tunisie",
+                latitude=36.4028,
+                longitude=10.1428,
+                total_capacity=1500.0,
+                available_capacity=1100.0,
+                accepted_waste_types="vine_residues,olive_pomace,olive_pits,pruning_residues",
+                storage_cost_per_unit=15.0,
+                description="Centre multimodal avec accès direct autoroute et pont-bascule certifié.",
+                is_active=True
+            ),
+        ]
+        for sf in seed_facilities:
+            db.add(sf)
+        db.commit()
+        facilities = db.query(StorageFacility).filter(StorageFacility.is_active == True).all()
 
     return [
         {
@@ -114,3 +163,18 @@ async def recommend_storage_facilities(
         "matches": matches,
         "total_matches": len(matches)
     }
+
+
+@router.delete("/facilities/{facility_id}")
+async def delete_storage_facility(
+    facility_id: str,
+    db: Session = Depends(get_db)
+):
+    facility = db.query(StorageFacility).filter(StorageFacility.id == facility_id).first()
+    if not facility:
+        raise HTTPException(status_code=404, detail="Storage facility not found")
+
+    facility.is_active = False
+    db.commit()
+
+    return {"message": "Storage facility deactivated successfully", "facility_id": facility_id}

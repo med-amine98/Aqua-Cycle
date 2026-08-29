@@ -73,18 +73,20 @@ class GeminiService:
             print(f"Erreur Chat: {e}")
             return "Je n'ai pas pu traiter votre question. Veuillez réessayer."
 
+from typing import Optional
+
 # Instance globale
 gemini_service = None
 
-def init_gemini(api_key: str):
+def init_gemini(api_key: Optional[str] = None):
     """Initialise le service Gemini"""
     global gemini_service
     if api_key:
         try:
             gemini_service = GeminiService(api_key)
-            print("✅ Service Gemini initialisé avec succès")
+            print("[OK] Service Gemini initialise avec succes")
         except Exception as e:
-            print(f"❌ Erreur d'initialisation de Gemini: {e}")
+            print(f"[ERROR] Erreur d'initialisation de Gemini: {e}")
             gemini_service = None
     else:
-        print("ℹ️ Clé API Gemini non configurée - Les fonctionnalités IA seront limitées")
+        print("[INFO] Cle API Gemini non configuree - Les fonctionnalites IA seront limitees")

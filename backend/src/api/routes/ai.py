@@ -105,7 +105,7 @@ async def chat_with_gemini(data: ChatRequest):
         raise HTTPException(status_code=503, detail="Service Gemini non disponible")
     
     try:
-        response = gemini_service.chat(data.message, data.context)
+        response = gemini_service.chat(data.message, data.context or "Général")
         return {
             "response": response,
             "timestamp": datetime.now().isoformat()

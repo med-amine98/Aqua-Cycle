@@ -204,15 +204,23 @@ async def delete_farm(
     current_user: User = Depends(get_current_user_dep),
     db: Session = Depends(get_db)
 ):
-    """Supprimer une ferme"""
+    """Supprimer une ferme et ses éléments dépendants"""
     try:
         farm = db.query(Farm).filter(Farm.id == farm_id, Farm.owner_id == current_user.id).first()
         if not farm:
             raise HTTPException(status_code=404, detail="Ferme non trouvée")
         
+        # Nettoyer explicitement les animaux et dépendances pour éviter les erreurs de clé étrangère
+        from ...models.animal import Animal
+        from ...models.plot import Plot
+        from ...models.water import WaterBudget
+        db.query(Animal).filter(Animal.farm_id == farm_id).delete(synchronize_session=False)
+        db.query(Plot).filter(Plot.farm_id == farm_id).delete(synchronize_session=False)
+        db.query(WaterBudget).filter(WaterBudget.farm_id == farm_id).delete(synchronize_session=False)
+
         db.delete(farm)
         db.commit()
-        return {"message": "Ferme supprimée avec succès"}
+        return {"message": "Ferme et ses données dépendantes supprimées avec succès"}
     except Exception as e:
         db.rollback()
         print(f"Erreur delete_farm: {e}")

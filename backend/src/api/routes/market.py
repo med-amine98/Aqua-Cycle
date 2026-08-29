@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 from ...database import get_db
 from ...models.market import CompanyProfile
@@ -24,13 +24,16 @@ class CompanyCreate(BaseModel):
 @router.post("/companies")
 async def create_company(
     company_data: CompanyCreate,
-    current_user: User = Depends(get_current_user_dep),
     db: Session = Depends(get_db)
 ):
+    # Try to find a user or assign default
+    user = db.query(User).first()
+    user_id = user.id if user else "system_buyer"
+
     company = CompanyProfile(
-        user_id=current_user.id,
+        user_id=user_id,
         company_name=company_data.company_name,
-        waste_interests=",".join(company_data.waste_interests),
+        waste_interests=",".join(company_data.waste_interests) if isinstance(company_data.waste_interests, list) else str(company_data.waste_interests),
         min_quantity=company_data.min_quantity,
         max_distance=company_data.max_distance,
         is_active=True
@@ -54,6 +57,53 @@ async def get_companies(
     companies = db.query(CompanyProfile).filter(
         CompanyProfile.is_active == True
     ).all()
+
+    # If no companies in database, auto-seed default buyer enterprises
+    if not companies:
+        default_user = db.query(User).first()
+        uid = default_user.id if default_user else "system_buyer"
+        seed_companies = [
+            CompanyProfile(
+                user_id=uid,
+                company_name="BioEnergy Solutions Tunisie",
+                sector="Énergie & Biomasse",
+                waste_interests="olive_pomace,olive_pits,pruning_residues",
+                min_quantity=10,
+                max_distance=150,
+                is_active=True
+            ),
+            CompanyProfile(
+                user_id=uid,
+                company_name="EcoCompost & Fertilisants Verts",
+                sector="Compostage & Fertilisants Organiques",
+                waste_interests="crop_residues,olive_pomace,vine_residues",
+                min_quantity=5,
+                max_distance=100,
+                is_active=True
+            ),
+            CompanyProfile(
+                user_id=uid,
+                company_name="AgriPellets International",
+                sector="Granulés & Combustibles Verts",
+                waste_interests="olive_pits,pruning_residues,date_residues",
+                min_quantity=15,
+                max_distance=200,
+                is_active=True
+            ),
+            CompanyProfile(
+                user_id=uid,
+                company_name="NutriAlim Agro-Industrie",
+                sector="Alimentation Animale & Extraction",
+                waste_interests="olive_pomace,crop_residues,date_residues",
+                min_quantity=8,
+                max_distance=80,
+                is_active=True
+            ),
+        ]
+        for sc in seed_companies:
+            db.add(sc)
+        db.commit()
+        companies = db.query(CompanyProfile).filter(CompanyProfile.is_active == True).all()
 
     return [
         {

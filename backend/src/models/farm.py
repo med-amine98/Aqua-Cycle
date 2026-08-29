@@ -36,6 +36,6 @@ class Farm(BaseModel):
     
     # Relations
     owner = relationship("User", back_populates="farm")
-    water_budget = relationship("WaterBudget", back_populates="farm", uselist=False)
-    plots = relationship("Plot", back_populates="farm")
-    animals = relationship("Animal", back_populates="farm")
+    water_budget = relationship("WaterBudget", back_populates="farm", uselist=False, cascade="all, delete-orphan")
+    plots = relationship("Plot", back_populates="farm", cascade="all, delete-orphan")
+    animals = relationship("Animal", back_populates="farm", cascade="all, delete-orphan")

@@ -225,36 +225,66 @@ const FarmManagement: React.FC = () => {
 
   return (
     <Box>
-      {/* En-tête */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#1A2332', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Agriculture sx={{ color: '#0A8F5C', fontSize: 32 }} />
-            Mes Fermes
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            {farms.length} exploitation(s) agricole(s)
-          </Typography>
+      {/* Top Banner Header */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          mb: 4,
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #064E3B 0%, #0A8F5C 60%, #0284C7 100%)',
+          color: 'white',
+          boxShadow: '0 10px 30px -5px rgba(10, 143, 92, 0.25)',
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Avatar sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white', width: 52, height: 52 }}>
+              <Agriculture sx={{ fontSize: 32 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
+                Gestion de mes Fermes ({farms.length})
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)', mt: 0.5 }}>
+                Enregistrez vos parcelles, définissez le type de sol et configurez les systèmes d'irrigation.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={loadFarms}
+              sx={{
+                borderRadius: 12,
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+                color: 'white',
+                backdropFilter: 'blur(8px)',
+                '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' },
+              }}
+            >
+              Actualiser
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => handleOpenDialog()}
+              sx={{
+                borderRadius: 12,
+                bgcolor: 'white',
+                color: '#064E3B',
+                fontWeight: 800,
+                boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                '&:hover': { bgcolor: '#F0FDF4' },
+              }}
+            >
+              Ajouter une ferme
+            </Button>
+          </Stack>
         </Box>
-        <Box display="flex" gap={1}>
-          <Button
-            variant="outlined"
-            startIcon={<Refresh />}
-            onClick={loadFarms}
-            sx={{ borderRadius: 10 }}
-          >
-            Actualiser
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => handleOpenDialog()}
-            sx={{ bgcolor: '#0A8F5C', borderRadius: 10 }}
-          >
-            Ajouter une ferme
-          </Button>
-        </Box>
-      </Box>
+      </Paper>
 
       {/* Liste des fermes */}
       {farms.length === 0 ? (

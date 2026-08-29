@@ -62,6 +62,7 @@ import {
   Compress,
   Visibility,
   Satellite,
+  AutoAwesome,
 } from '@mui/icons-material';
 import { farmService } from '../../services/farmService';
 import { integrationService } from '../../services/integrationService';
@@ -525,71 +526,97 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box>
-      {/* Header */}
+      {/* Header Banner */}
       <Fade in={true} timeout={600}>
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: '#1A2332' }}>
-              Bonjour, {user?.full_name || 'Utilisateur'} 👋
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              {farms.length > 0 
-                ? `${farms[0]?.name || 'Ferme'} - ${crops.length} culture(s) suivie(s)` 
-                : 'Commencez par créer votre exploitation'}
-            </Typography>
-            {currentWeather && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 3, sm: 4 },
+            mb: 4,
+            borderRadius: 4,
+            background: 'linear-gradient(135deg, #064E3B 0%, #0A8F5C 60%, #0284C7 100%)',
+            color: 'white',
+            boxShadow: '0 12px 30px -5px rgba(10, 143, 92, 0.3)',
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={3}>
+            <Box>
               <Chip
-                icon={<Cloud />}
-                label={`🌍 ${currentWeather.source} - ${new Date(currentWeather.timestamp).toLocaleString()}`}
+                icon={<AutoAwesome sx={{ color: '#FDE047 !important', fontSize: 16 }} />}
+                label="Supervision en Temps Réel"
                 size="small"
-                color="primary"
-                sx={{ mt: 1 }}
+                sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white', fontWeight: 700, mb: 1.5, backdropFilter: 'blur(8px)' }}
               />
-            )}
-            {nvidiaPredictions && (
-              <Chip
-                icon={<Satellite sx={{ fontSize: 16 }} />}
-                label={`🛰️ NVIDIA Earth-2: ${nvidiaPredictions.predictions.temperature.current}°C - ${nvidiaPredictions.predictions.agricultural.irrigationNeed}`}
-                size="small"
-                color="secondary"
-                sx={{ mt: 1, ml: 1 }}
-              />
-            )}
-          </Box>
-          <Box display="flex" gap={1} flexWrap="wrap">
-            <Button
-              variant="outlined"
-              startIcon={<Refresh />}
-              onClick={loadData}
-              size="small"
-              sx={{ borderRadius: 10 }}
-            >
-              Actualiser
-            </Button>
-            <Badge badgeContent={smartAlerts.length} color="error">
+              <Typography variant="h3" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em', mb: 0.5 }}>
+                Bonjour, {user?.full_name || 'Exploitant'} 👋
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '1.05rem', maxWidth: 640 }}>
+                {farms.length > 0
+                  ? `${farms[0]?.name || 'Exploitation'} • ${crops.length} culture(s) active(s) sous pilotage IA`
+                  : 'Bienvenue sur AquaCycle. Créez votre première ferme pour débloquer les analyses.'}
+              </Typography>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 2 }}>
+                {currentWeather && (
+                  <Chip
+                    icon={<Cloud sx={{ color: 'white !important' }} />}
+                    label={`${currentWeather.temperature}°C - ${currentWeather.condition}`}
+                    size="small"
+                    sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white', fontWeight: 700 }}
+                  />
+                )}
+                {nvidiaPredictions && (
+                  <Chip
+                    icon={<Satellite sx={{ color: '#38BDF8 !important' }} />}
+                    label={`NVIDIA Earth-2: ${nvidiaPredictions.predictions.temperature.current}°C`}
+                    size="small"
+                    sx={{ bgcolor: 'rgba(255, 255, 255, 0.2)', color: 'white', fontWeight: 700 }}
+                  />
+                )}
+              </Stack>
+            </Box>
+
+            <Stack direction="row" spacing={1.5} flexWrap="wrap">
               <Button
-                variant="contained"
-                startIcon={<NotificationsActive />}
-                onClick={() => setNotificationOpen(true)}
-                sx={{ bgcolor: '#ED6C02', borderRadius: 10 }}
+                variant="outlined"
+                startIcon={<Refresh />}
+                onClick={loadData}
                 size="small"
+                sx={{
+                  borderRadius: 12,
+                  borderColor: 'rgba(255, 255, 255, 0.5)',
+                  color: 'white',
+                  backdropFilter: 'blur(8px)',
+                  '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                }}
               >
-                Alertes ({smartAlerts.length})
+                Actualiser
               </Button>
-            </Badge>
-            {farms.length === 0 && (
-              <Button
-                variant="contained"
-                startIcon={<Add />}
-                onClick={() => navigate('/farms')}
-                sx={{ bgcolor: '#0A8F5C', borderRadius: 10 }}
-                size="small"
-              >
-                Créer ma ferme
-              </Button>
-            )}
+              <Badge badgeContent={smartAlerts.length} color="error">
+                <Button
+                  variant="contained"
+                  startIcon={<NotificationsActive />}
+                  onClick={() => setNotificationOpen(true)}
+                  sx={{ bgcolor: '#F59E0B', color: '#0F172A', fontWeight: 700, borderRadius: 12, '&:hover': { bgcolor: '#D97706', color: 'white' } }}
+                  size="small"
+                >
+                  Alertes ({smartAlerts.length})
+                </Button>
+              </Badge>
+              {farms.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<Add />}
+                  onClick={() => navigate('/farms')}
+                  sx={{ bgcolor: 'white', color: '#064E3B', fontWeight: 800, borderRadius: 12, '&:hover': { bgcolor: '#F0FDF4' } }}
+                  size="small"
+                >
+                  Créer ma ferme
+                </Button>
+              )}
+            </Stack>
           </Box>
-        </Box>
+        </Paper>
       </Fade>
 
       {/* Pipeline Inter-Modules Visual Flow */}

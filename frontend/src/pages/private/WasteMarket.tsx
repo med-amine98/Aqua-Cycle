@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -12,19 +13,15 @@ import {
   MenuItem,
   CardActions,
   Divider,
-  Avatar,
   Paper,
   Fade,
-  Grow,
   Zoom,
   Stack,
   IconButton,
-  Tooltip,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
 } from '@mui/material';
 import {
@@ -36,15 +33,15 @@ import {
   Visibility,
   ContactMail,
   LocalOffer,
-  Warning,
+  LocalShipping,
   CheckCircle,
-  Info,
   Close,
   Phone,
   Email,
   Person,
 } from '@mui/icons-material';
-import { wasteService } from '../../services/api';
+import { wasteService, offerService, companyService } from '../../services/api';
+import { CompanyProfile } from '../../types';
 
 interface WasteItem {
   id: string;
@@ -65,6 +62,7 @@ interface WasteItem {
 }
 
 const WasteMarket: React.FC = () => {
+  const navigate = useNavigate();
   const [wastes, setWastes] = useState<WasteItem[]>([]);
   const [filteredWastes, setFilteredWastes] = useState<WasteItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +73,20 @@ const WasteMarket: React.FC = () => {
     search: '',
   });
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [selectedWaste, setSelectedWaste] = useState<WasteItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
+  const [isCreatingNewCompanyInline, setIsCreatingNewCompanyInline] = useState(false);
+  const [inlineCompanyName, setInlineCompanyName] = useState('');
+  const [companies, setCompanies] = useState<CompanyProfile[]>([]);
+  const [offerData, setOfferData] = useState({
+    company_id: '',
+    quantity: 0,
+    price_per_unit: 0,
+    message: '',
+  });
 
   useEffect(() => {
     loadWastes();
@@ -91,21 +100,84 @@ const WasteMarket: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await wasteService.getAvailableWaste();
-      const data = response.data || [];
-      // Ajouter des données de contact simulées (à remplacer par des données réelles)
-      const enrichedData = data.map((item: any) => ({
-        ...item,
-        farmer_phone: '+216 70 123 456',
-        farmer_email: 'contact@aquacycle.com',
-      }));
-      setWastes(enrichedData);
-      setFilteredWastes(enrichedData);
+      const [wasteRes, compRes] = await Promise.allSettled([
+        wasteService.getAvailableWaste(),
+        companyService.getCompanies(),
+      ]);
+
+      if (wasteRes.status === 'fulfilled') {
+        const data = wasteRes.value.data || [];
+        const enrichedData = data.map((item: any) => ({
+          ...item,
+          farmer_phone: '+216 70 123 456',
+          farmer_email: 'contact@aquacycle.com',
+        }));
+        setWastes(enrichedData);
+        setFilteredWastes(enrichedData);
+      }
+
+      if (compRes.status === 'fulfilled') {
+        const loadedComps = compRes.value.data || [];
+        setCompanies(loadedComps);
+      }
     } catch (error) {
       console.error('Erreur:', error);
       setError('Impossible de charger les déchets disponibles');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenOffer = (waste: WasteItem) => {
+    setSelectedWaste(waste);
+    setOfferData({
+      company_id: companies[0]?.id || '',
+      quantity: waste.quantity || 10,
+      price_per_unit: waste.price_per_unit || 40,
+      message: '',
+    });
+    setIsCreatingNewCompanyInline(companies.length === 0);
+    setInlineCompanyName('');
+    setOfferDialogOpen(true);
+  };
+
+  const handleSubmitOffer = async () => {
+    if (!selectedWaste) return;
+
+    let targetCompanyId = offerData.company_id;
+
+    try {
+      if (isCreatingNewCompanyInline) {
+        if (!inlineCompanyName.trim()) {
+          setError("Veuillez saisir le nom de l'entreprise acheteuse");
+          return;
+        }
+        const compRes = await companyService.createCompany({
+          company_name: inlineCompanyName.trim(),
+          waste_interests: [selectedWaste.waste_type],
+          min_quantity: 5,
+          max_distance: 100,
+        });
+        targetCompanyId = compRes.data?.company_id;
+      }
+
+      if (!targetCompanyId) {
+        setError('Veuillez choisir ou créer une entreprise acheteuse');
+        return;
+      }
+
+      await offerService.createOffer({
+        waste_id: selectedWaste.id,
+        company_id: targetCompanyId,
+        quantity: offerData.quantity,
+        price_per_unit: offerData.price_per_unit,
+        message: offerData.message,
+      });
+
+      setSuccessMsg('Offre de rachat soumise avec succès ! Vous pouvez la suivre dans Supply Chain & Logistique.');
+      setOfferDialogOpen(false);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Erreur lors de l'envoi de l'offre");
     }
   };
 
@@ -280,12 +352,27 @@ const WasteMarket: React.FC = () => {
           >
             Actualiser
           </Button>
+          <Button
+            variant="contained"
+            startIcon={<LocalShipping />}
+            onClick={() => navigate('/supply-chain')}
+            size="small"
+            sx={{ borderRadius: 10, bgcolor: '#0A8F5C', '&:hover': { bgcolor: '#087349' } }}
+          >
+            Supply Chain & Logistique
+          </Button>
         </Box>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+
+      {successMsg && (
+        <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setSuccessMsg(null)}>
+          {successMsg}
         </Alert>
       )}
 
@@ -482,26 +569,33 @@ const WasteMarket: React.FC = () => {
                     )}
                   </CardContent>
 
-                  <CardActions sx={{ p: 2, pt: 0, gap: 1 }}>
+                  <CardActions sx={{ p: 2, pt: 0, gap: 1, flexWrap: 'wrap' }}>
                     <Button
                       variant="outlined"
                       size="small"
                       startIcon={<Visibility />}
-                      fullWidth
                       onClick={() => handleViewDetails(waste)}
-                      sx={{ borderRadius: 10 }}
+                      sx={{ borderRadius: 10, flex: 1 }}
                     >
                       Détails
                     </Button>
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       size="small"
                       startIcon={<ContactMail />}
-                      fullWidth
                       onClick={() => handleContact(waste)}
-                      sx={{ bgcolor: '#0A8F5C', borderRadius: 10 }}
+                      sx={{ borderRadius: 10, flex: 1 }}
                     >
-                      Contacter
+                      Contact
+                    </Button>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<LocalOffer />}
+                      onClick={() => handleOpenOffer(waste)}
+                      sx={{ bgcolor: '#0A8F5C', borderRadius: 10, width: '100%', mt: 0.5 }}
+                    >
+                      Faire une Offre
                     </Button>
                   </CardActions>
                 </Card>
@@ -668,6 +762,114 @@ const WasteMarket: React.FC = () => {
         <DialogActions>
           <Button onClick={handleCloseContact} sx={{ borderRadius: 10 }}>
             Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog Faire une Offre */}
+      <Dialog open={offerDialogOpen} onClose={() => setOfferDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          🤝 Soumettre une offre de rachat pour ce lot
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedWaste && (
+            <Stack spacing={2.5}>
+              <Alert severity="info" sx={{ borderRadius: 2 }}>
+                Vous proposez une offre d'achat à <strong>{selectedWaste.farmer_name || 'l\'agriculteur'}</strong> pour <strong>{getWasteTypeLabel(selectedWaste.waste_type)}</strong> ({selectedWaste.quantity} T à {selectedWaste.location}).
+              </Alert>
+
+              {/* Mode Switcher */}
+              <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: 3, border: '1px solid #E2E8F0' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>
+                    Entreprise Acheteuse
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setIsCreatingNewCompanyInline(!isCreatingNewCompanyInline)}
+                    sx={{ textTransform: 'none', fontWeight: 700 }}
+                  >
+                    {isCreatingNewCompanyInline ? '← Choisir entreprise existante' : '+ Nouvelle Entreprise'}
+                  </Button>
+                </Box>
+
+                {!isCreatingNewCompanyInline ? (
+                  <TextField
+                    fullWidth
+                    select
+                    size="small"
+                    label="Sélectionner l'entreprise"
+                    value={offerData.company_id}
+                    onChange={(e) => setOfferData({ ...offerData, company_id: e.target.value })}
+                  >
+                    {companies.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        🏢 {c.company_name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                ) : (
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Nom de la nouvelle entreprise acheteuse"
+                    value={inlineCompanyName}
+                    onChange={(e) => setInlineCompanyName(e.target.value)}
+                    placeholder="Ex: BioEnergy Solutions, EcoCompost Tunisie..."
+                    autoFocus
+                  />
+                )}
+              </Box>
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Quantité Souhaitée (T)"
+                    value={offerData.quantity}
+                    onChange={(e) => setOfferData({ ...offerData, quantity: Number(e.target.value) })}
+                    inputProps={{ max: selectedWaste.quantity, min: 0.1, step: 0.1 }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Prix Proposé (TND/T)"
+                    value={offerData.price_per_unit}
+                    onChange={(e) => setOfferData({ ...offerData, price_per_unit: Number(e.target.value) })}
+                  />
+                </Grid>
+              </Grid>
+
+              <Typography variant="body1" sx={{ fontWeight: 700, color: '#0A8F5C' }}>
+                Montant total de l'offre : {(offerData.quantity * offerData.price_per_unit).toLocaleString()} TND
+              </Typography>
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Message / Conditions de collecte"
+                value={offerData.message}
+                onChange={(e) => setOfferData({ ...offerData, message: e.target.value })}
+                placeholder="Indiquez vos modalités de paiement, créneaux de ramassage ou contraintes logistiques..."
+              />
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOfferDialogOpen(false)} sx={{ borderRadius: 10 }}>
+            Annuler
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmitOffer}
+            disabled={!offerData.company_id || offerData.quantity <= 0}
+            sx={{ bgcolor: '#0A8F5C', borderRadius: 10 }}
+          >
+            Confirmer & Envoyer l'Offre
           </Button>
         </DialogActions>
       </Dialog>

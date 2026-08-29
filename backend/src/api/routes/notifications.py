@@ -134,7 +134,7 @@ async def send_notification(
     db.refresh(notification)
     
     await manager.send_notification(
-        current_user.id,
+        str(current_user.id),
         {
             "id": notification.id,
             "type": notification.type,

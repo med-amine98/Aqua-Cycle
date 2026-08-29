@@ -1,3 +1,14 @@
+import sys
+import io
+
+try:
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if isinstance(sys.stderr, io.TextIOWrapper):
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+except Exception:
+    pass
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.database import engine, Base
@@ -8,9 +19,10 @@ from src.config import settings
 
 # Initialiser Gemini (optionnel)
 try:
-    init_gemini(settings.GEMINI_API_KEY)
-except:
-    print("⚠️ Gemini non initialisé")
+    if settings.GEMINI_API_KEY:
+        init_gemini(settings.GEMINI_API_KEY)
+except Exception as e:
+    print(f"[WARN] Gemini non initialise: {e}")
 
 # Créer les tables
 Base.metadata.create_all(bind=engine)
@@ -21,10 +33,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS - Autoriser toutes les origines en développement
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+    allow_origin_regex=r"http://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -78,9 +90,11 @@ async def list_routes():
     """Liste toutes les routes disponibles"""
     routes = []
     for route in app.routes:
-        if hasattr(route, 'path'):
-            methods = ", ".join(route.methods) if hasattr(route, 'methods') else "ALL"
-            routes.append(f"{methods} {route.path}")
+        path = getattr(route, 'path', None)
+        if path:
+            raw_methods = getattr(route, 'methods', None)
+            methods = ", ".join(raw_methods) if raw_methods else "ALL"
+            routes.append(f"{methods} {path}")
     return {"routes": routes}
 
 if __name__ == "__main__":

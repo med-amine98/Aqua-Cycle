@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from passlib.hash import sha256_crypt
+try:
+    from passlib.hash import sha256_crypt
+except ImportError:
+    sha256_crypt = None
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from ...models.user import User, UserRole

@@ -17,6 +17,7 @@ import FarmManagement from './pages/private/FarmManagement';
 import WaterManagement from './pages/private/WaterManagement';
 import WasteDeclaration from './pages/private/WasteDeclaration';
 import WasteMarket from './pages/private/WasteMarket';
+import SupplyChain from './pages/private/SupplyChain';
 import AnimalManagement from './pages/private/AnimalManagement';
 import AnimalHealthAnalysis from './pages/private/AnimalHealthAnalysis';
 import PlantHealthAnalysis from './pages/private/PlantHealthAnalysis';
@@ -56,6 +57,7 @@ function App() {
             <Route path="water" element={<WaterManagement />} />
             <Route path="waste/declare" element={<WasteDeclaration />} />
             <Route path="waste/market" element={<WasteMarket />} />
+            <Route path="supply-chain" element={<SupplyChain />} />
             <Route path="animals" element={<AnimalManagement />} />
             <Route path="animals/health" element={<AnimalHealthAnalysis />} />
             <Route path="plants/health" element={<PlantHealthAnalysis />} />

@@ -34,7 +34,7 @@ async def get_farm_status(
     # Fetch farm
     farm = db.query(Farm).filter(
         Farm.id == farm_id,
-        Farm.user_id == current_user.id
+        Farm.owner_id == current_user.id
     ).first()
     if not farm:
         raise HTTPException(status_code=404, detail="Ferme non trouvée")
@@ -75,9 +75,7 @@ async def get_farm_status(
         })
 
     # Fetch disease detections
-    health_analyses = db.query(HealthAnalysis).filter(
-        HealthAnalysis.user_id == current_user.id
-    ).order_by(HealthAnalysis.created_at.desc()).limit(20).all()
+    health_analyses = db.query(HealthAnalysis).order_by(HealthAnalysis.created_at.desc()).limit(20).all()
     disease_detections = []
     for h in health_analyses:
         disease_detections.append({

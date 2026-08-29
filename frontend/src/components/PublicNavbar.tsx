@@ -14,11 +14,15 @@ import {
   ListItemText,
   useMediaQuery,
   useTheme,
+  Avatar,
+  Stack,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   WaterDrop,
   Close as CloseIcon,
+  Sparkles,
+  ArrowForward,
 } from '@mui/icons-material';
 
 const PublicNavbar: React.FC = () => {
@@ -58,11 +62,13 @@ const PublicNavbar: React.FC = () => {
   };
 
   const drawer = (
-    <Box sx={{ width: 280, p: 2 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box display="flex" alignItems="center">
-          <WaterDrop sx={{ color: '#0A8F5C', fontSize: 32, mr: 1 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0A8F5C' }}>
+    <Box sx={{ width: 300, p: 3, height: '100%', bgcolor: '#FFFFFF' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Box display="flex" alignItems="center" gap={1.5}>
+          <Avatar sx={{ bgcolor: 'rgba(10, 143, 92, 0.12)', color: '#0A8F5C', width: 42, height: 42, borderRadius: 3 }}>
+            <WaterDrop sx={{ fontSize: 26 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
             AquaCycle
           </Typography>
         </Box>
@@ -70,18 +76,20 @@ const PublicNavbar: React.FC = () => {
           <CloseIcon />
         </IconButton>
       </Box>
-      <List>
+
+      <List sx={{ mb: 4 }}>
         {menuItems.map((item) => (
           <ListItem
             button
             key={item.text}
             onClick={() => handleNavigation(item.path)}
             sx={{
-              borderRadius: 2,
-              mb: 0.5,
+              borderRadius: 3,
+              mb: 1,
+              py: 1.2,
               backgroundColor: isActive(item.path) ? 'rgba(10, 143, 92, 0.08)' : 'transparent',
               '&:hover': {
-                backgroundColor: 'rgba(10, 143, 92, 0.04)',
+                backgroundColor: 'rgba(10, 143, 92, 0.12)',
               },
             }}
           >
@@ -89,151 +97,139 @@ const PublicNavbar: React.FC = () => {
               primary={item.text}
               sx={{
                 '& .MuiTypography-root': {
-                  fontWeight: isActive(item.path) ? 600 : 400,
-                  color: isActive(item.path) ? '#0A8F5C' : '#1A2332',
+                  fontWeight: isActive(item.path) ? 700 : 500,
+                  color: isActive(item.path) ? '#0A8F5C' : '#334155',
                 },
               }}
             />
           </ListItem>
         ))}
-        <ListItem
-          button
-          onClick={() => { navigate('/login'); setDrawerOpen(false); }}
-          sx={{
-            borderRadius: 2,
-            mt: 2,
-            bgcolor: '#0A8F5C',
-            '&:hover': {
-              bgcolor: '#06683F',
-            },
-          }}
-        >
-          <ListItemText
-            primary="Se connecter"
-            sx={{
-              '& .MuiTypography-root': {
-                color: 'white',
-                fontWeight: 600,
-                textAlign: 'center',
-              },
-            }}
-          />
-        </ListItem>
       </List>
+
+      <Stack spacing={2}>
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() => {
+            navigate('/login');
+            setDrawerOpen(false);
+          }}
+          sx={{ borderRadius: 12, py: 1.2 }}
+        >
+          Connexion
+        </Button>
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={() => {
+            navigate('/register');
+            setDrawerOpen(false);
+          }}
+          sx={{ borderRadius: 12, py: 1.2 }}
+        >
+          Essai Gratuit
+        </Button>
+      </Stack>
     </Box>
   );
 
   return (
-    <>
-      <AppBar
-        position="fixed"
-        sx={{
-          bgcolor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 1px 20px rgba(0,0,0,0.06)',
-          borderBottom: '1px solid rgba(0,0,0,0.05)',
-        }}
-      >
-        <Container maxWidth="xl">
-          <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
-            {/* Logo */}
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-              onClick={() => navigate('/')}
-            >
-              <WaterDrop sx={{ color: '#0A8F5C', fontSize: 32, mr: 1 }} />
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: 700,
-                  color: '#0A8F5C',
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        bgcolor: 'rgba(255, 255, 255, 0.85)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+        py: 0.5,
+      }}
+    >
+      <Container maxWidth="xl">
+        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 0, sm: 2 } }}>
+          {/* Logo */}
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={1.5}
+            onClick={() => navigate('/')}
+            sx={{ cursor: 'pointer' }}
+          >
+            <Avatar sx={{ bgcolor: 'rgba(10, 143, 92, 0.12)', color: '#0A8F5C', width: 42, height: 42, borderRadius: 3 }}>
+              <WaterDrop sx={{ fontSize: 26 }} />
+            </Avatar>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                 AquaCycle
               </Typography>
+              <Typography variant="caption" sx={{ color: '#0A8F5C', fontWeight: 700, fontSize: '0.7rem' }}>
+                SMART WATER & CIRCULAR AGRI
+              </Typography>
             </Box>
+          </Box>
 
-            {/* Menu Desktop */}
-            {!isMobile ? (
-              <Box display="flex" alignItems="center" gap={1}>
-                {menuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    onClick={() => handleNavigation(item.path)}
-                    sx={{
-                      color: isActive(item.path) ? '#0A8F5C' : '#4A5A6E',
-                      fontWeight: isActive(item.path) ? 600 : 400,
-                      px: 2,
-                      py: 1,
-                      borderRadius: 2,
-                      '&:hover': {
-                        backgroundColor: 'rgba(10, 143, 92, 0.04)',
-                        color: '#0A8F5C',
-                      },
-                    }}
-                  >
-                    {item.text}
-                  </Button>
-                ))}
+          {/* Desktop Links */}
+          {!isMobile && (
+            <Box display="flex" alignItems="center" gap={1}>
+              {menuItems.map((item) => (
                 <Button
-                  variant="contained"
-                  onClick={() => navigate('/login')}
+                  key={item.text}
+                  onClick={() => handleNavigation(item.path)}
                   sx={{
-                    ml: 2,
+                    color: isActive(item.path) ? '#0A8F5C' : '#475569',
+                    fontWeight: isActive(item.path) ? 700 : 600,
+                    px: 2,
+                    py: 0.8,
                     borderRadius: 10,
-                    px: 3,
-                    py: 1,
-                    bgcolor: '#0A8F5C',
+                    bgcolor: isActive(item.path) ? 'rgba(10, 143, 92, 0.08)' : 'transparent',
                     '&:hover': {
-                      bgcolor: '#06683F',
+                      bgcolor: 'rgba(10, 143, 92, 0.1)',
+                      color: '#0A8F5C',
                     },
                   }}
                 >
-                  Se connecter
+                  {item.text}
                 </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/register')}
-                  sx={{
-                    borderRadius: 10,
-                    px: 3,
-                    py: 1,
-                    borderColor: '#0A8F5C',
-                    color: '#0A8F5C',
-                    '&:hover': {
-                      borderColor: '#06683F',
-                      backgroundColor: 'rgba(10, 143, 92, 0.04)',
-                    },
-                  }}
-                >
-                  S'inscrire
-                </Button>
-              </Box>
-            ) : (
-              <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#1A2332' }}>
-                <MenuIcon />
-              </IconButton>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
+              ))}
+            </Box>
+          )}
 
-      {/* Drawer Mobile */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          sx: {
-            borderTopLeftRadius: 20,
-            borderBottomLeftRadius: 20,
-          },
-        }}
-      >
+          {/* Action Buttons */}
+          {!isMobile ? (
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Button
+                variant="text"
+                onClick={() => navigate('/login')}
+                sx={{ fontWeight: 700, color: '#334155' }}
+              >
+                Connexion
+              </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/register')}
+                endIcon={<ArrowForward />}
+                sx={{
+                  borderRadius: 12,
+                  px: 2.5,
+                  py: 1,
+                  boxShadow: '0 4px 14px rgba(10, 143, 92, 0.25)',
+                }}
+              >
+                Découvrir la Plateforme
+              </Button>
+            </Stack>
+          ) : (
+            <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#0F172A' }}>
+              <MenuIcon />
+            </IconButton>
+          )}
+        </Toolbar>
+      </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         {drawer}
       </Drawer>
-    </>
+    </AppBar>
   );
 };
 

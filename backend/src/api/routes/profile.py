@@ -27,8 +27,8 @@ async def update_profile(
     db: Session = Depends(get_db)
 ):
     """Mettre à jour le profil utilisateur"""
-    current_user.full_name = data.full_name
-    current_user.phone = data.phone
+    setattr(current_user, 'full_name', data.full_name)
+    setattr(current_user, 'phone', data.phone)
     # Ajouter les champs bio et location si vous les avez ajoutés au modèle
     # current_user.bio = data.bio
     # current_user.location = data.location

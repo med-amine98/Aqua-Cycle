@@ -202,19 +202,18 @@ class ImageAnalysisService:
             tasks.append(asyncio.coroutine(lambda: {"status": "unavailable"})())
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        gemini_r = results[0] if not isinstance(results[0], Exception) else {"status": "error"}
-        cnn_r = results[1] if not isinstance(results[1], Exception) else {"status": "error"}
-        yolo_r = results[2] if not isinstance(results[2], Exception) else {"status": "error"}
+        gemini_r: dict = results[0] if isinstance(results[0], dict) else {"status": "error"}
+        cnn_r: dict = results[1] if isinstance(results[1], dict) else {"status": "error"}
+        yolo_r: dict = results[2] if isinstance(results[2], dict) else {"status": "error"}
 
         # Compute merged confidence
-        confs = [
-            c for c in [
-                gemini_r.get("confidence", 0),
-                cnn_r.get("confidence", 0),
-                yolo_r.get("overall_confidence", 0),
-            ] if c and c > 0
+        raw_confs = [
+            gemini_r.get("confidence", 0),
+            cnn_r.get("confidence", 0),
+            yolo_r.get("overall_confidence", 0),
         ]
-        merged_conf = round(sum(confs) / len(confs), 1) if confs else 0
+        confs: list[float] = [float(c) for c in raw_confs if isinstance(c, (int, float)) and c > 0]
+        merged_conf = round(sum(confs) / len(confs), 1) if confs else 0.0
 
         # Consensus health status
         statuses = [

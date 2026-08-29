@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+    return `http://${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+};
+
+const API_URL = getApiUrl();
 
 // Créer une instance axios avec configuration de base
 export const api = axios.create({
@@ -134,6 +142,71 @@ export const farmService = {
   getRecommendations: (farmId: string) => api.post(`/farms/${farmId}/recommendations`),
 };
 
+// ==================== SUPPLY CHAIN SERVICES ====================
+
+// Service Entrepôts et Stockage
+export const storageService = {
+  getFacilities: () => api.get('/storage/facilities'),
+  createFacility: (data: any) => api.post('/storage/facilities', data),
+  recommendFacilities: (params: {
+    latitude: number;
+    longitude: number;
+    waste_type: string;
+    quantity: number;
+    max_distance?: number;
+  }) => api.get('/storage/facilities/recommend', { params }),
+  deleteFacility: (id: string) => api.delete(`/storage/facilities/${id}`),
+};
+
+// Service Offres Marketplace
+export const offerService = {
+  getOffers: (params?: { waste_id?: string; company_id?: string; status?: string }) =>
+    api.get('/offers', { params }),
+  getOffer: (id: string) => api.get(`/offers/${id}`),
+  createOffer: (data: {
+    waste_id: string;
+    company_id: string;
+    quantity: number;
+    price_per_unit: number;
+    message?: string;
+  }) => api.post('/offers', data),
+  updateOfferStatus: (id: string, status: string) =>
+    api.put(`/offers/${id}/status`, { status }),
+  deleteOffer: (id: string) => api.delete(`/offers/${id}`),
+};
+
+// Service Logistique & Collecte
+export const collectionService = {
+  getCollections: () => api.get('/collection'),
+  createCollection: (data: {
+    offer_id: string;
+    pickup_location: string;
+    destination: string;
+    storage_facility_id?: string | null;
+    estimated_distance_km?: number;
+    transport_cost?: number;
+  }) => api.post('/collection', data),
+  updateCollectionStatus: (id: string, status: string) =>
+    api.put(`/collection/${id}/status`, null, { params: { status } }),
+  planCollection: (data: {
+    waste_ids: string[];
+    storage_facility_id: string;
+  }) => api.post('/collection/plan', data),
+  deleteCollection: (id: string) => api.delete(`/collection/${id}`),
+};
+
+// Service Entreprises Partenaires
+export const companyService = {
+  getCompanies: () => api.get('/market/companies'),
+  createCompany: (data: {
+    company_name: string;
+    waste_interests: string[];
+    min_quantity?: number;
+    max_distance?: number;
+  }) => api.post('/market/companies', data),
+  deleteCompany: (id: string) => api.delete(`/market/companies/${id}`),
+};
+
 // Export par défaut
 export default {
   api,
@@ -141,4 +214,8 @@ export default {
   waterService,
   wasteService,
   farmService,
+  storageService,
+  offerService,
+  collectionService,
+  companyService,
 };

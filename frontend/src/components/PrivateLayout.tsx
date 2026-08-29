@@ -48,6 +48,7 @@ import {
   BarChart as BarChartIcon,
   Pets as PetsIcon,
   AttachMoney as AttachMoneyIcon,
+  LocalShipping as LocalShippingIcon,
   Close as CloseIcon,
   CheckCircle as CheckCircleIcon,
   Warning as WarningIcon,
@@ -69,6 +70,7 @@ const menuItems = [
   { text: 'Santé des Plantes', icon: <GrassIcon />, path: '/plants/health' },
   { text: 'Déclarer des déchets', icon: <WasteIcon />, path: '/waste/declare' },
   { text: 'Marché des déchets', icon: <PeopleIcon />, path: '/waste/market' },
+  { text: 'Supply Chain & Logistique', icon: <LocalShippingIcon />, path: '/supply-chain' },
   { text: 'Finances', icon: <AttachMoneyIcon />, path: '/finance' },
   { text: 'Données', icon: <BarChartIcon />, path: '/data' },
   { text: 'Profil', icon: <PersonIcon />, path: '/profile' },
@@ -229,17 +231,24 @@ const PrivateLayout: React.FC = () => {
   };
 
   const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ justifyContent: 'center', py: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>
-          <WaterIcon sx={{ color: '#0A8F5C', fontSize: 32, mr: 1 }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0A8F5C' }}>
-            AquaCycle
-          </Typography>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF' }}>
+      <Toolbar sx={{ px: 3, py: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: 1.5 }} onClick={() => navigate('/dashboard')}>
+          <Avatar sx={{ bgcolor: 'rgba(10, 143, 92, 0.12)', color: '#0A8F5C', width: 42, height: 42, borderRadius: 3 }}>
+            <WaterIcon sx={{ fontSize: 26 }} />
+          </Avatar>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+              AquaCycle
+            </Typography>
+            <Typography variant="caption" sx={{ color: '#0A8F5C', fontWeight: 700, fontSize: '0.7rem' }}>
+              SMART BIO-ECONOMY
+            </Typography>
+          </Box>
         </Box>
       </Toolbar>
-      <Divider />
-      <List sx={{ flex: 1, pt: 2 }}>
+      <Divider sx={{ borderColor: 'rgba(226, 232, 240, 0.8)' }} />
+      <List sx={{ flex: 1, px: 2, pt: 2, overflowY: 'auto' }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -251,20 +260,25 @@ const PrivateLayout: React.FC = () => {
                 setMobileOpen(false);
               }}
               sx={{
-                mx: 1,
-                borderRadius: 2,
-                mb: 0.5,
-                backgroundColor: isActive ? 'rgba(10, 143, 92, 0.08)' : 'transparent',
+                borderRadius: 3,
+                mb: 0.8,
+                py: 1.2,
+                px: 2,
+                backgroundColor: isActive ? 'rgba(10, 143, 92, 0.1)' : 'transparent',
+                border: isActive ? '1px solid rgba(10, 143, 92, 0.2)' : '1px solid transparent',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  backgroundColor: isActive ? 'rgba(10, 143, 92, 0.12)' : 'rgba(0,0,0,0.04)',
+                  backgroundColor: isActive ? 'rgba(10, 143, 92, 0.14)' : 'rgba(241, 245, 249, 0.8)',
+                  transform: 'translateX(3px)',
                 },
                 '& .MuiListItemIcon-root': {
-                  color: isActive ? '#0A8F5C' : '#4A5A6E',
-                  minWidth: 40,
+                  color: isActive ? '#0A8F5C' : '#64748B',
+                  minWidth: 38,
                 },
                 '& .MuiListItemText-primary': {
-                  fontWeight: isActive ? 600 : 400,
-                  color: isActive ? '#0A8F5C' : '#1A2332',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#0A8F5C' : '#334155',
+                  fontSize: '0.9rem',
                 },
               }}
             >
@@ -274,38 +288,43 @@ const PrivateLayout: React.FC = () => {
           );
         })}
       </List>
-      <Divider />
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+      <Divider sx={{ borderColor: 'rgba(226, 232, 240, 0.8)' }} />
+      <Box sx={{ p: 2.5, m: 2, borderRadius: 3, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Avatar
             sx={{
-              bgcolor: '#0A8F5C',
-              width: 40,
-              height: 40,
+              background: 'linear-gradient(135deg, #0A8F5C 0%, #0284C7 100%)',
+              width: 44,
+              height: 44,
               mr: 1.5,
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              boxShadow: '0 4px 10px rgba(10, 143, 92, 0.2)',
             }}
           >
             {getInitials(user?.full_name || '')}
           </Avatar>
-          <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          <Box sx={{ overflow: 'hidden' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A' }} noWrap>
               {user?.full_name || 'Utilisateur'}
             </Typography>
-            <Typography variant="caption" color="textSecondary">
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, display: 'block' }} noWrap>
               {user?.role === 'farmer' ? '👨‍🌾 Agriculteur' : user?.role === 'company' ? '🏢 Entreprise' : '👤 Utilisateur'}
             </Typography>
           </Box>
         </Box>
         {user?.is_premium && (
           <Box sx={{
-            bgcolor: '#FFF3E0',
+            bgcolor: '#FEF3C7',
             borderRadius: 2,
-            p: 1,
+            py: 0.5,
+            px: 1,
+            mt: 1.5,
             textAlign: 'center',
-            border: '1px solid #FFE0B2',
+            border: '1px solid #FDE68A',
           }}>
-            <Typography variant="caption" color="warning.main" sx={{ fontWeight: 600 }}>
-              ⭐ Premium
+            <Typography variant="caption" sx={{ color: '#B45309', fontWeight: 800, fontSize: '0.75rem' }}>
+              ⭐ MEMBRE PREMIUM
             </Typography>
           </Box>
         )}
